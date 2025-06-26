@@ -424,7 +424,6 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   gap: 24px;
-  max-width: 1400px;
   margin: 0 auto;
 }
 
