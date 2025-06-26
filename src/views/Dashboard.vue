@@ -5,7 +5,7 @@
       <div class="header-left">
         <h1 class="system-title">最高法安全运营统一门户</h1>
       </div>
-      
+
       <div class="header-center">
         <div class="scrolling-text">
           <div class="scroll-content">
@@ -13,72 +13,68 @@
           </div>
         </div>
       </div>
-      
+
       <div class="header-right">
-        <el-button 
-          type="text" 
-          @click="showSettings = true"
-          class="settings-btn"
-        >
-          <el-icon><Setting /></el-icon>
+        <el-button type="text" @click="showSettings = true" class="settings-btn">
+          <el-icon>
+            <Setting />
+          </el-icon>
         </el-button>
-        
+
         <div class="user-info">
           <span>欢迎访问，{{ user?.name || '用户' }}</span>
-          <el-icon class="user-icon"><User /></el-icon>
+          <el-icon class="user-icon">
+            <User />
+          </el-icon>
         </div>
       </div>
     </header>
-    
+
     <!-- 主要内容区域 -->
     <main class="dashboard-main">
       <div class="systems-grid">
-        <div 
-          v-for="system in selectedSystems" 
-          :key="system"
-          class="system-card"
-        >
+        <div v-for="system in selectedSystems" :key="system" class="system-card">
           <div class="system-header">
             <h3>{{ system }}</h3>
             <el-button type="text" size="small">
-              <el-icon><ArrowRight /></el-icon>
+              <el-icon>
+                <ArrowRight />
+              </el-icon>
             </el-button>
           </div>
-          
+
           <div class="system-content">
             <!-- 折线图 -->
             <div class="chart-section">
               <div class="chart-container">
-                <v-chart 
-                  :option="getLineChartOption(system)" 
-                  style="height: 200px;"
-                />
+                <v-chart :option="getLineChartOption(system)" style="height: 200px;" />
               </div>
             </div>
-            
+
             <!-- 饼图和小方块 -->
             <div class="bottom-section">
               <div class="pie-chart">
-                <v-chart 
-                  :option="getPieChartOption(system)" 
-                  style="height: 150px;"
-                />
+                <v-chart :option="getPieChartOption(system)" style="height: 150px;" />
               </div>
-              
+
               <div class="stat-boxes">
                 <div class="stat-box">
                   <div class="stat-icon" :style="{ backgroundColor: getSystemColor(system, 0) }">
-                    <el-icon><Monitor /></el-icon>
+                    <el-icon>
+                      <Monitor />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
                     <div class="stat-value">{{ getRandomValue(100, 999) }}</div>
                     <div class="stat-label">设备数量</div>
                   </div>
                 </div>
-                
+
                 <div class="stat-box">
                   <div class="stat-icon" :style="{ backgroundColor: getSystemColor(system, 1) }">
-                    <el-icon><Warning /></el-icon>
+                    <el-icon>
+                      <Warning />
+                    </el-icon>
                   </div>
                   <div class="stat-info">
                     <div class="stat-value">{{ getRandomValue(0, 50) }}</div>
@@ -91,28 +87,18 @@
         </div>
       </div>
     </main>
-    
+
     <!-- 设置弹窗 -->
-    <el-dialog 
-      v-model="showSettings" 
-      title="系统设置" 
-      width="500px"
-      :before-close="handleCloseSettings"
-    >
+    <el-dialog v-model="showSettings" title="系统设置" width="500px" :before-close="handleCloseSettings">
       <div class="settings-content">
         <h4>选择要显示的系统：</h4>
         <el-checkbox-group v-model="tempSelectedSystems" class="system-checkboxes">
-          <el-checkbox 
-            v-for="system in allSystems" 
-            :key="system"
-            :label="system"
-            class="system-checkbox"
-          >
+          <el-checkbox v-for="system in allSystems" :key="system" :label="system" class="system-checkbox">
             {{ system }}
           </el-checkbox>
         </el-checkbox-group>
       </div>
-      
+
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="showSettings = false">取消</el-button>
@@ -151,15 +137,15 @@ export default {
   setup() {
     const store = useStore()
     const router = useRouter()
-    
+
     const showSettings = ref(false)
     const scrollingText = ref('系统运行正常 | 安全态势良好 | 威胁检测活跃 | 数据处理正常 | 服务运行稳定')
     const tempSelectedSystems = ref([])
-    
+
     const user = computed(() => store.state.user)
     const selectedSystems = computed(() => store.state.selectedSystems)
     const allSystems = computed(() => store.state.allSystems)
-    
+
     // 系统颜色配置
     const systemColors = [
       ['#4A90E2', '#67B7DC'],
@@ -169,20 +155,33 @@ export default {
       ['#9013FE', '#B794F6'],
       ['#00D4AA', '#4ECDC4']
     ]
-    
+
     const getSystemColor = (system, index) => {
       const systemIndex = allSystems.value.indexOf(system) % systemColors.length
       return systemColors[systemIndex][index % 2]
     }
-    
+
     const getRandomValue = (min, max) => {
       return Math.floor(Math.random() * (max - min + 1)) + min
     }
-    
     const generateRandomData = (count = 7) => {
       return Array.from({ length: count }, () => Math.floor(Math.random() * 100) + 20)
     }
-    
+
+    // 生成近7天的日期
+    const getDateLabels = () => {
+      const dates = []
+      const today = new Date()
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today)
+        date.setDate(today.getDate() - i)
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        dates.push(`${month}/${day}`)
+      }
+      return dates
+    }
+
     const getLineChartOption = (system) => {
       return {
         tooltip: {
@@ -192,24 +191,38 @@ export default {
           textStyle: { color: '#fff' }
         },
         grid: {
-          left: '5%',
-          right: '5%',
+          left: '0',
+          right: '0%',
           top: '10%',
-          bottom: '15%'
+          bottom: '10%',
+          containLabel: true
         },
         xAxis: {
           type: 'category',
-          data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+          data: getDateLabels(),
           axisLine: { lineStyle: { color: '#eee' } },
           axisTick: { show: false },
-          axisLabel: { color: '#999', fontSize: 12 }
+          axisLabel: {
+            color: '#999',
+            fontSize: 11,
+            rotate: 0,
+            margin: 8
+          },
+          boundaryGap: false // 让折线从最左侧开始，到最右侧结束
         },
         yAxis: {
           type: 'value',
           axisLine: { show: false },
           axisTick: { show: false },
-          axisLabel: { color: '#999', fontSize: 12 },
-          splitLine: { lineStyle: { color: '#f5f5f5' } }
+          axisLabel: {
+            color: '#999',
+            fontSize: 11,
+            margin: 8,
+            formatter: '{value}'
+          },
+          splitLine: { lineStyle: { color: '#f5f5f5' } },
+          min: 0,
+          max: 120
         },
         series: [{
           data: generateRandomData(),
@@ -246,19 +259,23 @@ export default {
         }]
       }
     }
-    
     const getPieChartOption = (system) => {
       return {
         tooltip: {
           trigger: 'item',
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
           borderColor: 'transparent',
-          textStyle: { color: '#fff' }
+          textStyle: { color: '#fff' },
+          formatter: '{b}: {c} ({d}%)'
+        },
+        legend: {
+          show: false // 隐藏图例，避免遮挡
         },
         series: [{
           type: 'pie',
-          radius: ['40%', '70%'],
+          radius: ['40%', '70%'], // 缩小半径，给标签留更多空间
           center: ['50%', '50%'],
+          avoidLabelOverlap: true, // 避免标签重叠
           data: [
             { value: getRandomValue(20, 40), name: '正常' },
             { value: getRandomValue(5, 15), name: '警告' },
@@ -276,41 +293,62 @@ export default {
           ],
           label: {
             show: true,
-            fontSize: 12
+            fontSize: 10,
+            color: '#666',
+            formatter: '{b}',
+            position: 'outside', // 标签显示在外侧
+            distanceToLabelLine: 5
+          },
+          labelLine: {
+            show: true,
+            length: 10,
+            length2: 8,
+            smooth: false,
+            lineStyle: {
+              color: '#999',
+              width: 1
+            }
+          },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
           }
         }]
       }
     }
-    
+
     const handleCloseSettings = () => {
       tempSelectedSystems.value = [...selectedSystems.value]
       showSettings.value = false
     }
-    
+
     const saveSettings = () => {
       store.dispatch('updateSelectedSystems', tempSelectedSystems.value)
       showSettings.value = false
     }
-    
+
     onMounted(() => {
       // 检查登录状态
       const token = localStorage.getItem('token')
       const userData = localStorage.getItem('user')
-      
+
       if (!token || !userData) {
         router.push('/login')
         return
       }
-      
+
       // 恢复用户状态
       if (userData && !user.value) {
         store.commit('SET_USER', JSON.parse(userData))
       }
-      
+
       // 初始化临时选择的系统
       tempSelectedSystems.value = [...selectedSystems.value]
     })
-    
+
     return {
       showSettings,
       scrollingText,
@@ -349,7 +387,7 @@ export default {
 
 .header-left {
   flex: 0 0 auto;
-  
+
   .system-title {
     font-size: 20px;
     font-weight: 600;
@@ -363,14 +401,14 @@ export default {
   display: flex;
   justify-content: center;
   margin: 0 40px;
-  
+
   .scrolling-text {
     background: #f8fafc;
     border-radius: 20px;
     padding: 8px 24px;
     overflow: hidden;
     width: 400px;
-    
+
     .scroll-content {
       animation: scroll 15s linear infinite;
       white-space: nowrap;
@@ -381,8 +419,13 @@ export default {
 }
 
 @keyframes scroll {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
 }
 
 .header-right {
@@ -390,23 +433,23 @@ export default {
   display: flex;
   align-items: center;
   gap: 20px;
-  
+
   .settings-btn {
     font-size: 18px;
     color: #6b7280;
-    
+
     &:hover {
       color: #4f46e5;
     }
   }
-  
+
   .user-info {
     display: flex;
     align-items: center;
     gap: 8px;
     color: #374151;
     font-size: 14px;
-    
+
     .user-icon {
       font-size: 18px;
       color: #6b7280;
@@ -434,7 +477,7 @@ export default {
   padding: 20px;
   transition: all 0.3s ease;
   border: 1px solid #e5e7eb;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
@@ -446,17 +489,17 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-  
+
   h3 {
     font-size: 16px;
     font-weight: 600;
     color: #1f2937;
     margin: 0;
   }
-  
+
   .el-button {
     color: #6b7280;
-    
+
     &:hover {
       color: #4f46e5;
     }
@@ -466,31 +509,31 @@ export default {
 .system-content {
   .chart-section {
     margin-bottom: 20px;
-    
+
     .chart-container {
       border-radius: 8px;
       overflow: hidden;
     }
   }
-  
+
   .bottom-section {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    align-items: center;
+    align-items: stretch; // 改为stretch让两侧高度一致
   }
-  
+
   .pie-chart {
     border-radius: 8px;
-    overflow: hidden;
+    overflow: visible; // 改为visible，让饼图标签可以显示在容器外
   }
-  
+
   .stat-boxes {
     display: flex;
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .stat-box {
     display: flex;
     align-items: center;
@@ -498,7 +541,7 @@ export default {
     padding: 12px;
     background: #f8fafc;
     border-radius: 8px;
-    
+
     .stat-icon {
       width: 40px;
       height: 40px;
@@ -509,7 +552,7 @@ export default {
       color: #fff;
       font-size: 18px;
     }
-    
+
     .stat-info {
       .stat-value {
         font-size: 20px;
@@ -517,7 +560,7 @@ export default {
         color: #1f2937;
         line-height: 1;
       }
-      
+
       .stat-label {
         font-size: 12px;
         color: #6b7280;
@@ -533,7 +576,7 @@ export default {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-top: 16px;
-    
+
     .system-checkbox {
       padding: 8px 0;
     }
